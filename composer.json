@@ -26,13 +26,15 @@
     },
     "require": {
         "php": "^7.4|^8.0",
-        "ext-gmp": "*",
         "guzzlehttp/guzzle": "^6.0|^7.0",
         "firebase/php-jwt": "^6.10.1|^7.0",
         "aws/aws-sdk-php": ">=3.0"
     },
     "require-dev": {
         "phpunit/phpunit": ">=9.0"
+    },
+    "suggest": {
+        "ext-gmp": "Required only for the SRP (Secure Remote Password) authentication flow (AwsCognitoSrpService)."
     },
     "autoload": {
         "psr-4": {
