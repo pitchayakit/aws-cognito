@@ -169,13 +169,22 @@ class CognitoSessionGuard extends SessionGuard implements StatefulGuard
                 throw new AwsCognitoException('ERROR_AWS_COGNITO');
             } //End if
         } catch (CognitoIdentityProviderException $e) {
-            Log::error('CognitoSessionGuard:attempt:CognitoIdentityProviderException:'.$e->getAwsErrorCode());
+            //Skip logging for client-side (4xx) errors such as invalid credentials
+            $statusCode = $e->getStatusCode();
+            if (is_null($statusCode) || $statusCode < 400 || $statusCode >= 500) {
+                Log::error('CognitoSessionGuard:attempt:CognitoIdentityProviderException:'.$e->getAwsErrorCode());
+            } //End if
 
             //Handle the exception
             $returnValue = $this->handleCognitoException($e);
         } catch (NoLocalUserException | AwsCognitoException | Exception $e) {
             $exceptionClass = basename(str_replace('\\', DIRECTORY_SEPARATOR, get_class($e)));
-            Log::error('CognitoSessionGuard:attempt:'.$exceptionClass);
+
+            //Skip logging for client-side (4xx) Cognito errors such as invalid credentials
+            $statusCode = ($e instanceof AwsCognitoException) ? $e->getStatusCode() : null;
+            if (is_null($statusCode) || $statusCode < 400 || $statusCode >= 500) {
+                Log::error('CognitoSessionGuard:attempt:'.$exceptionClass);
+            } //End if
 
             //Find SQL Exception
             if (strpos($e->getMessage(), 'SQLSTATE') !== false) {

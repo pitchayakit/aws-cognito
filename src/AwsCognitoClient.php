@@ -196,7 +196,12 @@ class AwsCognitoClient
 
             $response = $this->client->adminInitiateAuth($payload);
         } catch (CognitoIdentityProviderException $exception) {
-            Log::error('AwsCognitoClient:authenticate:CognitoIdentityProviderException');
+            //Skip logging for client-side (4xx) errors such as invalid credentials
+            $statusCode = $exception->getStatusCode();
+            if (is_null($statusCode) || $statusCode < 400 || $statusCode >= 500) {
+                Log::error('AwsCognitoClient:authenticate:CognitoIdentityProviderException');
+            } //End if
+
             throw AwsCognitoException::create($exception);
         } //Try-catch ends
 
